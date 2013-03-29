@@ -26,15 +26,15 @@ class Chef < Model
   end
 
   def co_workers
-    DB.execute(<<-SQL, id, id).map { |c| Chef.parse(c) }
+    DB.execute(<<-SQL, id).map { |c| Chef.parse(c) }
         SELECT chefs.*
           FROM chef_tenures me
           JOIN chef_tenures coworkers
-            ON me.restaurant_id = coworkers.restaurant_id
+            ON (me.restaurant_id = coworkers.restaurant_id
+           AND me.chef_id != coworkers.chef_id)
           JOIN chefs
             ON chefs.id = coworkers.chef_id
          WHERE me.chef_id = ?
-           AND coworkers.chef_id != ?
            AND (coworkers.start_date 
        BETWEEN me.start_date
            AND COALESCE(me.end_date, date('now', 'localtime'))
@@ -104,15 +104,23 @@ class Review < Model
   end
 end
 
-peter = Chef.find(1)
-#p peter
-#peter.first_name = "Pete"
-#peter.save
-#p Chef.find(1)
-#peter.first_name = "Peter"
-#peter.save
+peter = Chef.by_first_name("Peter").first
+#p Chef.all
+p peter
+peter.first_name = "Pete"
+peter.save
+p Chef.find(1)
+peter.first_name = "Peter"
+peter.save
 
-p peter.co_workers
+new_guy = Chef.new
+new_guy.first_name = "Teddy"
+new_guy.last_name = "Bear"
+p new_guy
+new_guy.save
+p new_guy
+
+# p peter.co_workers
 
 # p Restaurant.by_neighborhood("Market St").first.average_review_score
 # p Critic.by_screen_name("ruggeri").first.unreviewed_restaurants

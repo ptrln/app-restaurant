@@ -12,7 +12,7 @@ class Model
 
   attr_reader :id
   DB = RestaurantDB.instance
-  @@column_names = Hash.new { Array.new }
+  @column_names = Hash.new { Array.new }
   
   def initialize(id = nil)
     @id = id
@@ -39,7 +39,11 @@ class Model
   end
 
   def self.column_names
-    @@column_names[self]
+    @column_names || []
+  end
+
+  def self.add_column_name(name)
+    @column_names.nil? ? @column_names = [name] : @column_names << name
   end
 
   def self.parse(hash)
@@ -83,9 +87,9 @@ class Model
     DB.execute(sql, *values, id)
   end
 
-  def self.attr_accessible(*column_names)
-    column_names.each do |column_name|
-      @@column_names[self] <<= column_name
+  def self.attr_accessible(*col_names)
+    col_names.each do |column_name|
+      add_column_name(column_name)
       define_instance_variables(column_name)
       define_find_by_column_names(column_name)
     end
@@ -93,7 +97,7 @@ class Model
 
   def self.define_find_by_column_names(column_name)
     self.class.send(:define_method, "by_#{column_name}") do |value|
-      raise NoMethodError unless @@column_names[self].include?(column_name)
+      raise NoMethodError unless @column_names.include?(column_name)
       sql = <<-SQL
         SELECT *
           FROM #{self.table_name}
