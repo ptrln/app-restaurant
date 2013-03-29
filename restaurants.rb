@@ -12,11 +12,36 @@ class Chef < Model
   end
 
   def reviews
-
+    DB.execute(<<-SQL, id).map { |r| Review.parse(r) }
+      SELECT rr.*
+        FROM restaurant_reviews rr
+        JOIN chef_tenures ct
+          ON ct.restaurant_id = rr.restaurant_id
+       WHERE ct.chef_id = ?
+         AND ct.is_head_chef = 1
+         AND rr.date 
+     BETWEEN ct.start_date 
+         AND COALESCE(ct.end_date, date('now', 'localtime'))  -- gives today if no end date
+    SQL
   end
 
   def co_workers
-
+    DB.execute(<<-SQL, id, id).map { |c| Chef.parse(c) }
+        SELECT chefs.*
+          FROM chef_tenures me
+          JOIN chef_tenures coworkers
+            ON me.restaurant_id = coworkers.restaurant_id
+          JOIN chefs
+            ON chefs.id = coworkers.chef_id
+         WHERE me.chef_id = ?
+           AND coworkers.chef_id != ?
+           AND (coworkers.start_date 
+       BETWEEN me.start_date
+           AND COALESCE(me.end_date, date('now', 'localtime'))
+            OR me.start_date
+       BETWEEN coworkers.start_date
+           AND COALESCE(coworkers.end_date, date('now', 'localtime')))
+    SQL
   end
 end
 
@@ -80,12 +105,14 @@ class Review < Model
 end
 
 peter = Chef.find(1)
-p peter
-peter.first_name = "Pete"
-peter.save
-p Chef.find(1)
-peter.first_name = "Peter"
-peter.save
+#p peter
+#peter.first_name = "Pete"
+#peter.save
+#p Chef.find(1)
+#peter.first_name = "Peter"
+#peter.save
 
-p Restaurant.by_neighborhood("Market St").first.average_review_score
-p Critic.by_screen_name("ruggeri").first.unreviewed_restaurants
+p peter.co_workers
+
+# p Restaurant.by_neighborhood("Market St").first.average_review_score
+# p Critic.by_screen_name("ruggeri").first.unreviewed_restaurants

@@ -22,8 +22,8 @@ CREATE TABLE restaurants (
 CREATE TABLE chef_tenures (
   chef_id INTEGER NOT NULL,
   restaurant_id INTEGER NOT NULL,
-  start_date TEXT NOT NULL,
-  end_date TEXT,
+  start_date DATE NOT NULL,
+  end_date DATE,
   is_head_chef ENUM(1,0) NOT NULL,
   FOREIGN KEY(chef_id) REFERENCES chefs(id),
   FOREIGN KEY(restaurant_id) REFERENCES restaurants(id)
@@ -40,7 +40,7 @@ CREATE TABLE restaurant_reviews (
   critic_id INTEGER NOT NULL,
   restaurant_id INTEGER NOT NULL,
   score TINYINT NOT NULL,
-  date TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  date DATE NOT NULL DEFAULT (date('now','localtime')),
   FOREIGN KEY(critic_id) REFERENCES critics(id),
   FOREIGN KEY(restaurant_id) REFERENCES restaurants(id)
 );
@@ -57,7 +57,7 @@ INSERT INTO restaurants
 
 INSERT INTO chef_tenures
      VALUES (1, 1, '2012-03-29', NULL, 1),
-            (2, 2, '2013-03-11', '2013-03-12', 0),
+            (2, 1, '2013-03-11', '2013-03-12', 0),
             (2, 3, '2013-03-13', NULL, 1),
             (3, 3, '2013-04-01', NULL, 0);
 
