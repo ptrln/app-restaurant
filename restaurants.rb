@@ -60,6 +60,30 @@ class Restaurant < Model
        WHERE restaurant_id = ?
     SQL
   end
+
+  def self.top_restaurants(n)
+    DB.execute(<<-SQL, n).map { |r| Restaurant.parse(r) }
+         SELECT r.*
+           FROM restaurants r
+      LEFT JOIN restaurant_reviews rr
+             ON r.id = rr.restaurant_id
+       GROUP BY r.id
+       ORDER BY AVG(rr.score) DESC
+          LIMIT ?
+    SQL
+  end
+
+  def self.highly_reviewed_restaurants(min_reviews)
+    return all if min_reviews == 0
+    DB.execute(<<-SQL, min_reviews).map { |r| Restaurant.parse(r) }
+         SELECT r.*
+           FROM restaurants r
+           JOIN restaurant_reviews rr
+             ON r.id = rr.restaurant_id
+       GROUP BY r.id
+         HAVING COUNT(rr.score) >= ?
+    SQL
+  end
 end
 
 class Critic < Model
@@ -104,21 +128,25 @@ class Review < Model
   end
 end
 
-peter = Chef.by_first_name("Peter").first
-#p Chef.all
-p peter
-peter.first_name = "Pete"
-peter.save
-p Chef.find(1)
-peter.first_name = "Peter"
-peter.save
+p Restaurant.top_restaurants(3)
 
-new_guy = Chef.new
-new_guy.first_name = "Teddy"
-new_guy.last_name = "Bear"
-p new_guy
-new_guy.save
-p new_guy
+p Restaurant.highly_reviewed_restaurants(1)
+
+# peter = Chef.by_first_name("Peter").first
+#p Chef.all
+# p peter
+# peter.first_name = "Pete"
+# peter.save
+# p Chef.find(1)
+# peter.first_name = "Peter"
+# peter.save
+
+# new_guy = Chef.new
+# new_guy.first_name = "Teddy"
+# new_guy.last_name = "Bear"
+# p new_guy
+# new_guy.save
+# p new_guy
 
 # p peter.co_workers
 
