@@ -114,7 +114,7 @@ class Critic < Model
 end
 
 class Review < Model
-  attr_accessible :text, :critic_id, :restaurant_id, :score, :date
+  attr_accessible :text, :score, :date
   belongs_to(:critic, "critics") { |c| Critic.parse(c) }
   belongs_to(:restaurant, "restaurants") { |r| Restaurant.parse(r) }
 
@@ -128,12 +128,13 @@ class Review < Model
   end
 end
 
-p Restaurant.top_restaurants(3)
+# p Restaurant.top_restaurants(3)
 
-p Restaurant.highly_reviewed_restaurants(1)
+# p Restaurant.highly_reviewed_restaurants(1)
 
-# peter = Chef.by_first_name("Peter").first
-#p Chef.all
+peter = Chef.by_first_name("Peter").first
+p peter
+# p Chef.all
 # p peter
 # peter.first_name = "Pete"
 # peter.save
